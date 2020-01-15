@@ -13,7 +13,8 @@ public class SpawnCreatures : MonoBehaviour
         for (int i = 0; i < spawn; i++)
         {
             Vector3 pos = new Vector3(Random.Range(-range.x, range.x), 0.5f, Random.Range(-range.y, range.y));
-            Instantiate(creature, pos, Quaternion.identity);
+            GameObject _spawn = Instantiate(creature, pos, Quaternion.identity);
+            _spawn.GetComponent<Organism>().RandomStart();
         }
     }
 
