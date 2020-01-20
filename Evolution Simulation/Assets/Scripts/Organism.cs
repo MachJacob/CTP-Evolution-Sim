@@ -29,7 +29,7 @@ public class Organism : MonoBehaviour
     void Start()
     {
         age = 0;
-        Destroy(reproSystem);
+        Destroy(this.GetComponent<BaseReproduction>());
         int sex = Random.Range(0, 2);
         if (sex == 0)
         {
@@ -55,7 +55,7 @@ public class Organism : MonoBehaviour
         List<GameObject> fruit = new List<GameObject>();
         List<GameObject> females = new List<GameObject>();
 
-    age += Time.deltaTime;
+        age += Time.deltaTime;
         if (health < 100)   //health
         {
             health += Time.deltaTime / 2;
