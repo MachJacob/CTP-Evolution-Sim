@@ -54,6 +54,7 @@ public class ReproductionFemale : BaseReproduction
         GameObject offspring = Instantiate(gameObject);
         offspring.GetComponent<Organism>().SetGenes(offspringGenes);
         offspring.GetComponent<Organism>().SetParents(this.gameObject, father);
+        offspring.GetComponent<Organism>().Mutate();
     }
 
     public override void GrowOffspring(float _energy)

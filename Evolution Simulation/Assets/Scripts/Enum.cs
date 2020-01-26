@@ -10,6 +10,7 @@ public class Enum
         METABOLISM,
         GEST_PER,
         SIZE,
+        BITE
 
     };
 }

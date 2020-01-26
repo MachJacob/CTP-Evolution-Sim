@@ -246,4 +246,12 @@ public class Organism : MonoBehaviour
         mother = _mother;
         father = _father;
     }
+
+    public void Mutate()
+    {
+        if (Random.Range(0, 100) > 95)
+        {
+            genes[Random.Range(0, 20)] += Random.Range(-0.5f, 0.5f);
+        }
+    }
 }
