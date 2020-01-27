@@ -10,17 +10,12 @@ public class Organism : MonoBehaviour
     [SerializeField] private float energy;
     [SerializeField] private float detectionRadius;
     [SerializeField] private float speed;
-    private float metabolism;
     private GameObject goal;
     [SerializeField] private Vector3 direction;
     private float timestamp;
     private bool male;
-    [SerializeField][Range(0,1)] private float carnivorous;
-    private float vegMass;
-    private float vegEnergy;
-    private float meatMass;
-    private float meatEnergy;
     private BaseReproduction reproSystem;
+    private Stomach stomach;
     [SerializeField] private float matingUrge;
     [SerializeField] private GameObject mother;
     [SerializeField] private GameObject father;
@@ -29,7 +24,10 @@ public class Organism : MonoBehaviour
     void Start()
     {
         age = 0;
-        Destroy(this.GetComponent<BaseReproduction>());
+
+        Destroy(this.GetComponent<BaseReproduction>()); //destroy residual organs
+        Destroy(this.GetComponent<Stomach>());
+
         int sex = Random.Range(0, 2);
         if (sex == 0)
         {
@@ -41,11 +39,9 @@ public class Organism : MonoBehaviour
             male = false;
             reproSystem = gameObject.AddComponent<ReproductionFemale>();
         }
-
-        vegMass = 0;
-        vegEnergy = 0;
-        meatMass = 0;
-        meatEnergy = 0;
+        stomach = gameObject.AddComponent<Stomach>();
+        stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
+        stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
     }
 
     void Update()
@@ -56,11 +52,11 @@ public class Organism : MonoBehaviour
         List<GameObject> females = new List<GameObject>();
 
         age += Time.deltaTime;
-        if (health < 100)   //health
-        {
-            health += Time.deltaTime / 2;
-            energy -= Time.deltaTime / 2;
-        }
+        //if (health < 100)   //health
+        //{
+        //    health += Time.deltaTime / 2;
+        //    energy -= Time.deltaTime / 2;
+        //}
         if (energy <= 0)
         {
             Destroy(gameObject);
@@ -68,27 +64,7 @@ public class Organism : MonoBehaviour
 
         lossEnergy += Time.deltaTime;
 
-        if (vegMass > 0 || meatMass > 0)    //digestion
-        {
-            float sumMass = vegMass + meatMass;
-            float vegRatio = vegMass / sumMass;
-            if (vegMass > 0)
-            {
-                float vegDigest = Time.deltaTime * metabolism * vegRatio;
-                float vegGain = (vegDigest / vegMass) * vegEnergy;
-                vegMass -= vegDigest;
-                vegEnergy -= vegGain;
-                gainEnergy += vegGain * (1 - carnivorous);
-            }
-            if (meatMass > 0)
-            {
-                float meatDigest = Time.deltaTime * metabolism * (1 - vegRatio);
-                float meatGain = (meatDigest / meatMass) * meatEnergy;
-                meatMass -= meatDigest;
-                meatEnergy -= meatGain;
-                gainEnergy += meatGain * carnivorous;
-            }
-        }
+        gainEnergy += stomach.Digest();
 
         Collider[] nearby = Physics.OverlapSphere(transform.position, detectionRadius); //detect nearby objects
         foreach (Collider col in nearby)
@@ -186,8 +162,8 @@ public class Organism : MonoBehaviour
     {
         if (other.gameObject.tag == "Fruit")
         {
-            vegMass += other.gameObject.GetComponent<Fruit>().GetMass();
-            vegEnergy += other.gameObject.GetComponent<Fruit>().GetEnergy();
+            Fruit fruit = other.gameObject.GetComponent<Fruit>();
+            stomach.AddMass(fruit.GetMass(), fruit.GetEnergy(), true);
             Destroy(other.gameObject);
         }
         if (other.gameObject.CompareTag("Organism"))
@@ -211,7 +187,8 @@ public class Organism : MonoBehaviour
 
         detectionRadius = genes[(int)Enum.GENES.DET_RAD];
         speed = genes[(int)Enum.GENES.SPEED];
-        metabolism = genes[(int)Enum.GENES.METABOLISM];
+        stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
+        stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
     }
 
     public float GetGene(Enum.GENES _gene)
@@ -231,14 +208,14 @@ public class Organism : MonoBehaviour
         genes[(int)Enum.GENES.DET_RAD] = Random.Range(2.5f, 15.5f);
         genes[(int)Enum.GENES.METABOLISM] = Random.Range(0f, 10f);
         genes[(int)Enum.GENES.GEST_PER] = Random.Range(50f, 100f);
+        genes[(int)Enum.GENES.BITE] = Random.Range(0f, 10f);
+        genes[(int)Enum.GENES.CARNIVOROUS] = Random.value;
         health = Random.Range(50f, 150f);
         energy = Random.Range(50f, 150f);
         direction = new Vector3(0.0f, 0.0f, 0.0f);
         detectionRadius = genes[(int)Enum.GENES.DET_RAD];
         speed = genes[(int)Enum.GENES.SPEED];
-        metabolism = genes[(int)Enum.GENES.METABOLISM];
         timestamp = Random.Range(-0.5f, 0.5f);
-        carnivorous = Random.value;
     }
 
     public void SetParents(GameObject _mother, GameObject _father)
