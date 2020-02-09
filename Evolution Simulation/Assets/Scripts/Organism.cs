@@ -10,8 +10,8 @@ public class Organism : MonoBehaviour
     [SerializeField] private float energy;
     [SerializeField] private float detectionRadius;
     [SerializeField] private float speed;
-    private GameObject goal;
-    [SerializeField] private Vector3 direction;
+    [SerializeField] private GameObject goal;
+    private Vector3 direction;
     private float timestamp;
     private bool male;
     private BaseReproduction reproSystem;
@@ -20,10 +20,14 @@ public class Organism : MonoBehaviour
     [SerializeField] private GameObject mother;
     [SerializeField] private GameObject father;
     [SerializeField] string currentState;
+    private bool hunting;
+    private bool alive;
+    [SerializeField] private float pause;
 
     void Start()
     {
         age = 0;
+        alive = true;
 
         Destroy(this.GetComponent<BaseReproduction>()); //destroy residual organs
         Destroy(this.GetComponent<Stomach>());
@@ -49,7 +53,19 @@ public class Organism : MonoBehaviour
         float gainEnergy = 0;
         float lossEnergy = 0;
         List<GameObject> fruit = new List<GameObject>();
-        List<GameObject> females = new List<GameObject>();
+        List<GameObject> creatures = new List<GameObject>();
+        List<GameObject> corpses = new List<GameObject>();
+
+        if (health <= 0)
+        {
+            alive = false;
+            return;
+        }
+
+        if (pause > 0)
+        {
+            pause -= Time.deltaTime;
+        }
 
         age += Time.deltaTime;
         //if (health < 100)   //health
@@ -69,43 +85,70 @@ public class Organism : MonoBehaviour
         Collider[] nearby = Physics.OverlapSphere(transform.position, detectionRadius); //detect nearby objects
         foreach (Collider col in nearby)
         {
-            if(col.gameObject.CompareTag("Fruit"))
+            if (col.gameObject.CompareTag("Fruit"))
             {
                 fruit.Add(col.gameObject);
-                break;
             }
-            else if (col.gameObject.CompareTag("Organism") && !col.gameObject.GetComponent<Organism>().male)
+            else if (col.gameObject.CompareTag("Organism") && col.gameObject != this.gameObject)
             {
-                females.Add(col.gameObject);
-                break;
+                if (col.gameObject.GetComponent<Organism>().alive)
+                {
+                    creatures.Add(col.gameObject);
+                }
+                else
+                {
+                    corpses.Add(col.gameObject);
+                }
             }
         }
 
-        if (energy < 100)   //TODO: refactor
+        if (energy < 100)   //TODO: refactor        find food
         {
+            hunting = false;
             float lowestDist = 50000;
             GameObject closest = null;
+            float carn = genes[(int)Enum.GENES.CARNIVOROUS];
             foreach (GameObject food in fruit)
             {
-                if (Vector3.Distance(transform.position, food.transform.position) < lowestDist)
+                if (Vector3.Distance(transform.position, food.transform.position) * (1 - carn) < lowestDist)
                 {
-                    lowestDist = Vector3.Distance(transform.position, food.transform.position);
+                    lowestDist = Vector3.Distance(transform.position, food.transform.position) * (1 - carn);
                     closest = food;
+                    currentState = "Find Fruit";
+                }
+            }
+            foreach(GameObject prey in creatures)
+            {
+                if (Vector3.Distance(transform.position, prey.transform.position) * carn * 0.5f < lowestDist)
+                {
+                    lowestDist = Vector3.Distance(transform.position, prey.transform.position) * carn * 0.5f;
+                    closest = prey;
+                    hunting = true;
+                    currentState = "Hunt";
+                }
+            }
+            foreach (GameObject corpse in corpses)
+            {
+                if (Vector3.Distance(transform.position, corpse.transform.position) * carn < lowestDist)
+                {
+                    lowestDist = Vector3.Distance(transform.position, corpse.transform.position) * carn;
+                    closest = corpse;
+                    hunting = true;
+                    currentState = "Find Carcass";
                 }
             }
             goal = closest;
-            currentState = "Find Food";
         }
-        else if (matingUrge > 100)
+        else if (matingUrge > 100)      //find mate
         {
             float lowestDist = 50000;
             GameObject closest = null;
-            foreach (GameObject mate in females)
+            foreach (GameObject potMate in creatures)
             {
-                if (Vector3.Distance(transform.position, mate.transform.position) < lowestDist)
+                if (!potMate.GetComponent<Organism>().male && Vector3.Distance(transform.position, potMate.transform.position) < lowestDist)
                 {
-                    lowestDist = Vector3.Distance(transform.position, mate.transform.position);
-                    closest = mate;
+                    lowestDist = Vector3.Distance(transform.position, potMate.transform.position);
+                    closest = potMate;
                 }
             }
             goal = closest;
@@ -116,7 +159,7 @@ public class Organism : MonoBehaviour
             goal = null;
         }
 
-        if (goal)   
+        if (goal && pause <= 0)   
         {
             //Vector3 moveTo = Vector3.MoveTowards(transform.position, goal.transform.position, 1);
             Vector3 moveTo = goal.transform.position - transform.position;
@@ -124,7 +167,7 @@ public class Organism : MonoBehaviour
             moveTo *= Time.deltaTime;
             transform.Translate(moveTo.x * speed, 0.0f, moveTo.z * speed, Space.World);
         }
-        else    //wander
+        else if (pause <= 0)       //wander
         {
             if (timestamp > 1)
             {
@@ -160,7 +203,7 @@ public class Organism : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.tag == "Fruit")
+        if (other.gameObject.CompareTag("Fruit"))
         {
             Fruit fruit = other.gameObject.GetComponent<Fruit>();
             stomach.AddMass(fruit.GetMass(), fruit.GetEnergy(), true);
@@ -172,6 +215,22 @@ public class Organism : MonoBehaviour
             {
                 reproSystem.Impregnate(other.gameObject.GetComponent<ReproductionFemale>());
                 matingUrge = 0;
+                pause = 2;
+            }
+            else if (hunting)
+            {
+                if (other.gameObject.GetComponent<Organism>().alive)
+                {
+                    other.gameObject.GetComponent<Organism>().DealDamage(genes[(int)Enum.GENES.BITE]);
+                    other.gameObject.transform.Translate((other.gameObject.transform.position - transform.position) * 0.1f);
+                    pause = 2;
+                }
+                else
+                {
+                    Destroy(other.gameObject);
+                    stomach.AddMass(500, 1000, false);
+                }
+                
             }
         }
     }
@@ -230,5 +289,10 @@ public class Organism : MonoBehaviour
         {
             genes[Random.Range(0, 20)] += Random.Range(-0.5f, 0.5f);
         }
+    }
+
+    public void DealDamage(float _dam)
+    {
+        health -= _dam;
     }
 }
