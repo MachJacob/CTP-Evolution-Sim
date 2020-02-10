@@ -246,8 +246,8 @@ public class Organism : MonoBehaviour
 
         detectionRadius = genes[(int)Enum.GENES.DET_RAD];
         speed = genes[(int)Enum.GENES.SPEED];
-        stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
-        stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
+        //stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
+        //stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
     }
 
     public float GetGene(Enum.GENES _gene)
@@ -267,7 +267,7 @@ public class Organism : MonoBehaviour
         genes[(int)Enum.GENES.DET_RAD] = Random.Range(2.5f, 15.5f);
         genes[(int)Enum.GENES.METABOLISM] = Random.Range(0f, 10f);
         genes[(int)Enum.GENES.GEST_PER] = Random.Range(50f, 100f);
-        genes[(int)Enum.GENES.BITE] = Random.Range(0f, 10f);
+        genes[(int)Enum.GENES.BITE] = Random.Range(0f, 25f);
         genes[(int)Enum.GENES.CARNIVOROUS] = Random.value;
         health = Random.Range(50f, 150f);
         energy = Random.Range(50f, 150f);
