@@ -23,6 +23,8 @@ public class Organism : MonoBehaviour
     private bool hunting;
     private bool alive;
     [SerializeField] private float pause;
+    private float[] input = new float[5];
+    private NeuralNet net;
 
     void Start()
     {
@@ -46,6 +48,8 @@ public class Organism : MonoBehaviour
         stomach = gameObject.AddComponent<Stomach>();
         stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
         stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
+
+        net.FeedForward(input);
     }
 
     void Update()
