@@ -10,12 +10,14 @@ public class Stomach : MonoBehaviour
     private float vegEnergy;
     [SerializeField] private float meatMass;
     private float meatEnergy;
+    private float carnValue;
     void Start()
     {
         vegMass = 0;
         vegEnergy = 0;
         meatMass = 0;
         meatEnergy = 0;
+        carnValue = Mathf.Pow((carnivorous - 1), 2) * 0.75f + 0.25f;
     }
 
     void Update()
@@ -60,7 +62,7 @@ public class Stomach : MonoBehaviour
                 float vegGain = (vegDigest / vegMass) * vegEnergy;
                 vegMass -= vegDigest;
                 vegEnergy -= vegGain;
-                digEnergy += vegGain * (1 - carnivorous);
+                digEnergy += vegGain * (1 - carnValue);
             }
             if (meatMass > 0)
             {
@@ -68,10 +70,15 @@ public class Stomach : MonoBehaviour
                 float meatGain = (meatDigest / meatMass) * meatEnergy;
                 meatMass -= meatDigest;
                 meatEnergy -= meatGain;
-                digEnergy += meatGain * carnivorous;
+                digEnergy += meatGain * carnValue;
             }
         }
 
         return digEnergy;
+    }
+
+    public float CarnVal()
+    {
+        return carnValue;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -111,7 +111,7 @@ public class Organism : MonoBehaviour
             hunting = false;
             float lowestDist = 50000;
             GameObject closest = null;
-            float carn = genes[(int)Enum.GENES.CARNIVOROUS];
+            float carn = stomach.CarnVal();
             foreach (GameObject food in fruit)
             {
                 if (Vector3.Distance(transform.position, food.transform.position) * (1 - carn) < lowestDist)
@@ -173,7 +173,7 @@ public class Organism : MonoBehaviour
         }
         else if (pause <= 0)       //wander
         {
-            if (timestamp > 1)
+            if (timestamp > 5)
             {
                 direction.x += Random.Range(-5.0f, 5.0f);
                 direction.z += Random.Range(-5.0f, 5.0f);
