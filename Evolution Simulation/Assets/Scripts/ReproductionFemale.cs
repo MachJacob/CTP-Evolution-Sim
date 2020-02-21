@@ -51,7 +51,7 @@ public class ReproductionFemale : BaseReproduction
 
     private void GiveBirth()
     {
-        GameObject offspring = Instantiate(gameObject);
+        GameObject offspring = Instantiate(gameObject, transform.parent);
         offspring.GetComponent<Organism>().SetGenes(offspringGenes);
         offspring.GetComponent<Organism>().SetParents(this.gameObject, father);
         offspring.GetComponent<Organism>().Mutate();

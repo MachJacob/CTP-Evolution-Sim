@@ -49,7 +49,7 @@ public class Organism : MonoBehaviour
         stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
         stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
 
-        net.FeedForward(input);
+        //net.FeedForward(input);
     }
 
     void Update()
