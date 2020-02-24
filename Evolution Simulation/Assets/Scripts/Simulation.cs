@@ -8,16 +8,23 @@ public class Simulation : MonoBehaviour
     private float foodTick;
     [SerializeField] private GameObject fruit;
     [SerializeField][Range(0, 10)] private float timescale;
+    [SerializeField] private List<float>[] lists;
     private List<float> values;
     private float snapshot = 0f;
     public Transform creatures;
     public WindowGraph graph;
+    [Range(0, 20)] public int graphID;
 
     void Start()
     {
         simulationTime = 0f;
         timescale = 1.0f;
+        lists = new List<float>[21];
         values = new List<float>();
+        for (int i = 0; i < 21; i++)
+        {
+            lists[i] = new List<float>();
+        }
     }
 
     void Update()
@@ -39,16 +46,24 @@ public class Simulation : MonoBehaviour
 
         if (simulationTime >= snapshot)
         {
-            values.Add(creatures.childCount);
-            graph.ShowGraph(values);
+            lists[20].Add(creatures.childCount);
 
-            //float sum = 0;        //display genes
-            //for (int i = 0; i < creatures.childCount; i++)
-            //{
-            //    sum += creatures.GetChild(i).GetComponent<Organism>().GetGene(0);
-            //}
-            //values.Add(sum /= creatures.childCount);
-            //graph.ShowGraph(values);
+            //graph.ShowGraph(lists[20]);
+
+            float[] sum = new float[20];        //display genes
+            for (int i = 0; i < creatures.childCount; i++)
+            {
+                for(int j = 0; j < 20; j++)
+                {
+                    sum[j] += creatures.GetChild(i).GetComponent<Organism>().GetGene(j);
+                }
+            }
+            for (int i = 0; i < 20; i++)
+            {
+                lists[i].Add(sum[i] /= creatures.childCount);
+            }
+            
+            graph.ShowGraph(lists[graphID]);
 
 
             snapshot += 60f;

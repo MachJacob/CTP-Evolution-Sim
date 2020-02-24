@@ -8,6 +8,7 @@ public class WindowGraph : MonoBehaviour
     [SerializeField] private Sprite circleSprite;
     private RectTransform graphContainer;
     private List<GameObject> graph;
+    [SerializeField] private Text maxText;
 
     private void Awake()
     {
@@ -37,7 +38,8 @@ public class WindowGraph : MonoBehaviour
         }
         graph.Clear();
         float graphHeight = graphContainer.sizeDelta.y;
-        float yMax = 100f;
+        float yMax = Mathf.Max(valueList.ToArray());
+        maxText.text = System.Math.Round(yMax, 3).ToString();
         float xSize = graphContainer.sizeDelta.x / valueList.Count;
 
         GameObject lastCircle = null;
