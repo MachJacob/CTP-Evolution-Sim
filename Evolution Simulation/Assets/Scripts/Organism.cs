@@ -48,6 +48,9 @@ public class Organism : MonoBehaviour
         stomach = gameObject.AddComponent<Stomach>();
         stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
         stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
+        energy = Random.Range(50f, 150f);
+
+        GetComponent<MeshRenderer>().material.color = new Color(genes[(int)Enum.GENES.CARNIVOROUS], genes[(int)Enum.GENES.SPEED] / 1.5f, genes[(int)Enum.GENES.METABOLISM] / 10);
 
         //net.FeedForward(input);
     }
