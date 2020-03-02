@@ -15,7 +15,7 @@ public class Fruit : MonoBehaviour
             mass = 0;
         }
        
-        energy = 10;
+        energy = 5;
     }
 
     void Update()

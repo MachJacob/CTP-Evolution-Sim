@@ -16,7 +16,7 @@ public class ReproductionFemale : BaseReproduction
     {
         offspringGenes = new float[20];
         self = GetComponent<Organism>();
-        gestationPeriod = self.GetGene(Enum.GENES.GEST_PER);
+        gestationPeriod = self.GetGene(GENES.GEST_PER);
         pregnant = false;
         offEnergy = 0;
     }

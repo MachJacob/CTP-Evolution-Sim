@@ -11,6 +11,7 @@ public class Organism : MonoBehaviour
     [SerializeField] private float detectionRadius;
     [SerializeField] private float speed;
     [SerializeField] private GameObject goal;
+    private Vector3 goalDir;
     private Vector3 direction;
     private float timestamp;
     private bool male;
@@ -25,6 +26,8 @@ public class Organism : MonoBehaviour
     [SerializeField] private float pause;
     private float[] input = new float[5];
     private NeuralNet net;
+    private Transform recentAttacker;
+    private float attackMem;
 
     void Start()
     {
@@ -46,12 +49,14 @@ public class Organism : MonoBehaviour
             reproSystem = gameObject.AddComponent<ReproductionFemale>();
         }
         stomach = gameObject.AddComponent<Stomach>();
-        stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
-        stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
+        stomach.SetMetabolism(genes[(int)GENES.METABOLISM]);
+        stomach.SetCarnivious(genes[(int)GENES.CARNIVOROUS]);
         energy = Random.Range(50f, 150f);
+        float size = genes[(int)GENES.SIZE];
+        transform.localScale = new Vector3(size, size, size);
 
-        GetComponent<MeshRenderer>().material.color = new Color(genes[(int)Enum.GENES.CARNIVOROUS], genes[(int)Enum.GENES.SPEED] / 1.5f, genes[(int)Enum.GENES.METABOLISM] / 10);
-
+        GetComponent<MeshRenderer>().material.color = new Color(genes[(int)GENES.CARNIVOROUS], genes[(int)GENES.SPEED] / 1.5f, genes[(int)GENES.METABOLISM] / 10);
+        attackMem = -1;
         //net.FeedForward(input);
     }
 
@@ -63,9 +68,19 @@ public class Organism : MonoBehaviour
         List<GameObject> creatures = new List<GameObject>();
         List<GameObject> corpses = new List<GameObject>();
 
+        if (gameObject.name.Contains("Break"))
+        {
+            Debug.Log("idk");
+        }
         if (health <= 0)
         {
-            alive = false;
+            if (alive)
+            {
+                alive = false;
+                transform.parent = null;
+                gameObject.name += "(dead)";
+                currentState = "Dead";
+            }
             return;
         }
 
@@ -75,17 +90,17 @@ public class Organism : MonoBehaviour
         }
 
         age += Time.deltaTime;
-        //if (health < 100)   //health
-        //{
-        //    health += Time.deltaTime / 2;
-        //    energy -= Time.deltaTime / 2;
-        //}
+        if (health < 100)   //regain health at cost of energy
+        {
+            health += Time.deltaTime / 2;
+            lossEnergy += Time.deltaTime / 2;
+        }
         if (energy <= 0)
         {
             Destroy(gameObject);
         }
 
-        lossEnergy += Time.deltaTime;
+        lossEnergy += Time.deltaTime * genes[(int)GENES.SIZE];
 
         gainEnergy += stomach.Digest();
 
@@ -109,7 +124,38 @@ public class Organism : MonoBehaviour
             }
         }
 
-        if (energy < 100)   //TODO: refactor        find food
+        if (recentAttacker)
+        {
+            attackMem -= Time.deltaTime;
+            bool fight = (genes[(int)GENES.CARNIVOROUS] > 0.5);
+
+            goal = recentAttacker.gameObject;
+            if (fight)
+            {
+                goalDir = goal.transform.position - transform.position;
+                currentState = "Fight Back";
+                hunting = true;
+            }
+            else
+            {
+                goalDir = transform.position - goal.transform.position;
+                currentState = "Flee";
+                hunting = false;
+            }
+
+            foreach(GameObject creature in creatures)
+            {
+                if (creature.transform == recentAttacker && creature.GetComponent<Organism>().alive)
+                {
+                    attackMem = 5;
+                }
+            }
+            if (attackMem < 0)
+            {
+                recentAttacker = null;
+            }
+        }
+        else if (energy < 100)   //TODO: refactor        find food
         {
             hunting = false;
             float lowestDist = 50000;
@@ -145,6 +191,10 @@ public class Organism : MonoBehaviour
                 }
             }
             goal = closest;
+            if (goal)
+            {
+                goalDir = goal.transform.position - transform.position;
+            }
         }
         else if (matingUrge > 100)      //find mate
         {
@@ -159,6 +209,10 @@ public class Organism : MonoBehaviour
                 }
             }
             goal = closest;
+            if (goal)
+            {
+                goalDir = goal.transform.position - transform.position;
+            }
             currentState = "Find Mate";
         }
         else
@@ -166,13 +220,10 @@ public class Organism : MonoBehaviour
             goal = null;
         }
 
-        if (goal && pause <= 0)   
+        if (goal && pause <= 0)   //movement in goal direction
         {
-            //Vector3 moveTo = Vector3.MoveTowards(transform.position, goal.transform.position, 1);
-            Vector3 moveTo = goal.transform.position - transform.position;
-            moveTo.Normalize();
-            moveTo *= Time.deltaTime;
-            transform.Translate(moveTo.x * speed, 0.0f, moveTo.z * speed, Space.World);
+            goalDir.Normalize();
+            transform.Translate(goalDir * Time.deltaTime * speed, Space.World);
         }
         else if (pause <= 0)       //wander
         {
@@ -228,14 +279,14 @@ public class Organism : MonoBehaviour
             {
                 if (other.gameObject.GetComponent<Organism>().alive)
                 {
-                    other.gameObject.GetComponent<Organism>().DealDamage(genes[(int)Enum.GENES.BITE]);
+                    other.gameObject.GetComponent<Organism>().DealDamage(genes[(int)GENES.BITE] * genes[(int)GENES.SIZE], transform);
                     other.gameObject.transform.Translate((other.gameObject.transform.position - transform.position) * 0.1f);
                     pause = 2;
                 }
                 else
                 {
                     Destroy(other.gameObject);
-                    stomach.AddMass(500, 1000, false);
+                    stomach.AddMass(500, 500, false);
                 }
                 
             }
@@ -251,13 +302,13 @@ public class Organism : MonoBehaviour
     {
         genes = _genes;
 
-        detectionRadius = genes[(int)Enum.GENES.DET_RAD];
-        speed = genes[(int)Enum.GENES.SPEED];
+        detectionRadius = genes[(int)GENES.DET_RAD];
+        speed = genes[(int)GENES.SPEED];
         //stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
         //stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
     }
 
-    public float GetGene(Enum.GENES _gene)
+    public float GetGene(GENES _gene)
     {
         return genes[(int)_gene];
     }
@@ -270,17 +321,18 @@ public class Organism : MonoBehaviour
     public void RandomStart()
     {
         genes = new float[20];
-        genes[(int)Enum.GENES.SPEED] = Random.Range(0.5f, 1.5f);
-        genes[(int)Enum.GENES.DET_RAD] = Random.Range(2.5f, 15.5f);
-        genes[(int)Enum.GENES.METABOLISM] = Random.Range(0f, 10f);
-        genes[(int)Enum.GENES.GEST_PER] = Random.Range(50f, 100f);
-        genes[(int)Enum.GENES.BITE] = Random.Range(0f, 25f);
-        genes[(int)Enum.GENES.CARNIVOROUS] = Random.value;
+        genes[(int)GENES.SPEED] = Random.Range(0.5f, 1.5f);
+        genes[(int)GENES.DET_RAD] = Random.Range(2.5f, 15.5f);
+        genes[(int)GENES.METABOLISM] = Random.Range(0f, 10f);
+        genes[(int)GENES.GEST_PER] = Random.Range(50f, 100f);
+        genes[(int)GENES.SIZE] = Random.Range(0.5f, 2.0f);
+        genes[(int)GENES.BITE] = Random.Range(0f, 25f);
+        genes[(int)GENES.CARNIVOROUS] = Random.value;
         health = Random.Range(50f, 150f);
         energy = Random.Range(50f, 150f);
         direction = new Vector3(0.0f, 0.0f, 0.0f);
-        detectionRadius = genes[(int)Enum.GENES.DET_RAD];
-        speed = genes[(int)Enum.GENES.SPEED];
+        detectionRadius = genes[(int)GENES.DET_RAD];
+        speed = genes[(int)GENES.SPEED];
         timestamp = Random.Range(-0.5f, 0.5f);
     }
 
@@ -298,8 +350,10 @@ public class Organism : MonoBehaviour
         }
     }
 
-    public void DealDamage(float _dam)
+    public void DealDamage(float _dam, Transform _attacker)
     {
         health -= _dam;
+        recentAttacker = _attacker;
+        attackMem = 5;
     }
 }
