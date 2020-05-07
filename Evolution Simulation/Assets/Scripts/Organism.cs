@@ -4,38 +4,46 @@ using UnityEngine;
 
 public class Organism : MonoBehaviour
 {
-    [SerializeField] private float[] genes;
+    //[SerializeField] private float[] genes;
     [SerializeField] private float age;
     [SerializeField] private float health;
     [SerializeField] private float energy;
     [SerializeField] private float detectionRadius;
     [SerializeField] private float speed;
+
     [SerializeField] private GameObject goal;
     private Vector3 goalDir;
     private Vector3 direction;
+
     private float timestamp;
+
     private bool male;
     private BaseReproduction reproSystem;
     private Stomach stomach;
     [SerializeField] private float matingUrge;
     [SerializeField] private GameObject mother;
     [SerializeField] private GameObject father;
+
     [SerializeField] string currentState;
     private bool hunting;
     private bool alive;
     [SerializeField] private float pause;
+
     private float[] input = new float[5];
     private NeuralNet net;
+
     private Transform recentAttacker;
     private float attackMem;
+
+    [SerializeField] private Genes genes;
 
     void Start()
     {
         age = 0;
         alive = true;
 
-        Destroy(this.GetComponent<BaseReproduction>()); //destroy residual organs
-        Destroy(this.GetComponent<Stomach>());
+        Destroy(GetComponent<BaseReproduction>()); //destroy residual organs
+        Destroy(GetComponent<Stomach>());
 
         int sex = Random.Range(0, 2);
         if (sex == 0)
@@ -49,13 +57,13 @@ public class Organism : MonoBehaviour
             reproSystem = gameObject.AddComponent<ReproductionFemale>();
         }
         stomach = gameObject.AddComponent<Stomach>();
-        stomach.SetMetabolism(genes[(int)GENES.METABOLISM]);
-        stomach.SetCarnivious(genes[(int)GENES.CARNIVOROUS]);
+        stomach.SetMetabolism(genes.metabolism);
+        stomach.SetCarnivious(genes.carnivorous);
         energy = Random.Range(50f, 150f);
-        float size = genes[(int)GENES.SIZE];
+        float size = genes.size;
         transform.localScale = new Vector3(size, size, size);
 
-        GetComponent<MeshRenderer>().material.color = new Color(genes[(int)GENES.CARNIVOROUS], genes[(int)GENES.SPEED] / 1.5f, genes[(int)GENES.METABOLISM] / 10);
+        GetComponent<MeshRenderer>().material.color = new Color(genes.carnivorous, genes.speed / 1.5f, genes.metabolism / 10);
         attackMem = -1;
         //net.FeedForward(input);
     }
@@ -100,7 +108,7 @@ public class Organism : MonoBehaviour
             Destroy(gameObject);
         }
 
-        lossEnergy += Time.deltaTime * genes[(int)GENES.SIZE];
+        lossEnergy += Time.deltaTime * genes.size;
 
         gainEnergy += stomach.Digest();
 
@@ -127,7 +135,7 @@ public class Organism : MonoBehaviour
         if (recentAttacker)
         {
             attackMem -= Time.deltaTime;
-            bool fight = (genes[(int)GENES.CARNIVOROUS] > 0.5);
+            bool fight = (genes.carnivorous > 0.5);
 
             goal = recentAttacker.gameObject;
             if (fight)
@@ -279,7 +287,7 @@ public class Organism : MonoBehaviour
             {
                 if (other.gameObject.GetComponent<Organism>().alive)
                 {
-                    other.gameObject.GetComponent<Organism>().DealDamage(genes[(int)GENES.BITE] * genes[(int)GENES.SIZE], transform);
+                    other.gameObject.GetComponent<Organism>().DealDamage(genes.bite * genes.size, transform);
                     other.gameObject.transform.Translate((other.gameObject.transform.position - transform.position) * 0.1f);
                     pause = 2;
                 }
@@ -293,46 +301,46 @@ public class Organism : MonoBehaviour
         }
     }
 
-    public float[] GetAllGenes()
+    public Genes GetAllGenes()
     {
         return genes;
     }
 
-    public void SetGenes(float[] _genes)
+    public void SetGenes(Genes _genes)
     {
         genes = _genes;
 
-        detectionRadius = genes[(int)GENES.DET_RAD];
-        speed = genes[(int)GENES.SPEED];
-        //stomach.SetMetabolism(genes[(int)Enum.GENES.METABOLISM]);
-        //stomach.SetCarnivious(genes[(int)Enum.GENES.CARNIVOROUS]);
+        detectionRadius = genes.detRad;
+        speed = genes.speed;
     }
 
     public float GetGene(GENES _gene)
     {
-        return genes[(int)_gene];
+        return genes.GetFloat()[(int)_gene];
     }
 
     public float GetGene(int _gene)
     {
-        return genes[_gene];
+        return genes.GetFloat()[_gene];
     }
 
     public void RandomStart()
     {
-        genes = new float[20];
-        genes[(int)GENES.SPEED] = Random.Range(0.5f, 1.5f);
-        genes[(int)GENES.DET_RAD] = Random.Range(2.5f, 15.5f);
-        genes[(int)GENES.METABOLISM] = Random.Range(0f, 10f);
-        genes[(int)GENES.GEST_PER] = Random.Range(50f, 100f);
-        genes[(int)GENES.SIZE] = Random.Range(0.5f, 2.0f);
-        genes[(int)GENES.BITE] = Random.Range(0f, 25f);
-        genes[(int)GENES.CARNIVOROUS] = Random.value;
+        genes = new Genes
+        {
+            speed = Random.Range(0.5f, 1.5f),
+            detRad = Random.Range(2.5f, 15.5f),
+            metabolism = Random.Range(0f, 10f),
+            gestPer = Random.Range(50f, 100f),
+            size = Random.Range(0.5f, 2.0f),
+            bite = Random.Range(0f, 25f),
+            carnivorous = Random.value
+        };
         health = Random.Range(50f, 150f);
         energy = Random.Range(50f, 150f);
         direction = new Vector3(0.0f, 0.0f, 0.0f);
-        detectionRadius = genes[(int)GENES.DET_RAD];
-        speed = genes[(int)GENES.SPEED];
+        detectionRadius = genes.detRad;
+        speed = genes.speed;
         timestamp = Random.Range(-0.5f, 0.5f);
     }
 
@@ -346,7 +354,7 @@ public class Organism : MonoBehaviour
     {
         if (Random.Range(0, 100) > 95)
         {
-            genes[Random.Range(0, 20)] += Random.Range(-0.5f, 0.5f);
+            genes.Random(); //+= Random.Range(-0.5f, 0.5f);
         }
     }
 

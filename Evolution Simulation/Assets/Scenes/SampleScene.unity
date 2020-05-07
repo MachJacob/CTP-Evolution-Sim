@@ -805,7 +805,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   circleSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   maxText: {fileID: 1506661797}
-  graphID: 0
 --- !u!1 &1865805512
 GameObject:
   m_ObjectHideFlags: 0

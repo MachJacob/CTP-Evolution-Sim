@@ -11,6 +11,8 @@ public class Stomach : MonoBehaviour
     [SerializeField] private float meatMass;
     private float meatEnergy;
     private float carnValue;
+    private float stomachCapacity;
+
     void Start()
     {
         vegMass = 0;
@@ -18,11 +20,6 @@ public class Stomach : MonoBehaviour
         meatMass = 0;
         meatEnergy = 0;
         carnValue = Mathf.Pow((carnivorous - 1), 2) * 0.75f + 0.25f;
-    }
-
-    void Update()
-    {
-        
     }
 
     public void SetMetabolism(float _met)

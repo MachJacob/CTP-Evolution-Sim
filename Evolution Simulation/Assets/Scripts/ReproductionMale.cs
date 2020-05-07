@@ -19,6 +19,6 @@ public class ReproductionMale : BaseReproduction
 
     public override void Impregnate(ReproductionFemale _female)
     {
-        _female.TakeGenes(self.GetAllGenes(), this.gameObject);
+        _female.TakeGenes(self.GetAllGenes().GetFloat(), this.gameObject);
     }
 }

@@ -50,15 +50,15 @@ public class Simulation : MonoBehaviour
 
             //graph.ShowGraph(lists[20]);
 
-            float[] sum = new float[20];        //display genes
+            float[] sum = new float[7];        //display genes
             for (int i = 0; i < creatures.childCount; i++)
             {
-                for(int j = 0; j < 20; j++)
+                for(int j = 0; j < 7; j++)
                 {
                     sum[j] += creatures.GetChild(i).GetComponent<Organism>().GetGene(j);
                 }
             }
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 7; i++)
             {
                 lists[i].Add(sum[i] /= creatures.childCount);
             }
@@ -67,6 +67,14 @@ public class Simulation : MonoBehaviour
 
 
             snapshot += 60f;
+        }
+    }
+
+    private void FormAGNES()
+    {
+        for (int i = 0; i < creatures.childCount; i++)
+        {
+
         }
     }
 }

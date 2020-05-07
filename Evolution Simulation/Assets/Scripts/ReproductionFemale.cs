@@ -41,9 +41,10 @@ public class ReproductionFemale : BaseReproduction
         {
             return; //cannot get pregnant twice at once
         }
+        Genes ownGenes = self.GetAllGenes();
         for (int i = 0; i < _genes.Length; i++)
         {
-            offspringGenes[i] = Mathf.Lerp(_genes[i], self.GetGene(i), Random.value);
+            offspringGenes[i] = Mathf.Lerp(_genes[i], ownGenes.GetFloat()[i], Random.value);
         }
         pregnant = true;
         father = _father;
@@ -52,7 +53,9 @@ public class ReproductionFemale : BaseReproduction
     private void GiveBirth()
     {
         GameObject offspring = Instantiate(gameObject, transform.parent);
-        offspring.GetComponent<Organism>().SetGenes(offspringGenes);
+        Genes offGenes = new Genes();
+        offGenes.AssignGenes(offspringGenes);
+        offspring.GetComponent<Organism>().SetGenes(offGenes);
         offspring.GetComponent<Organism>().SetParents(this.gameObject, father);
         offspring.GetComponent<Organism>().Mutate();
     }
