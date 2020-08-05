@@ -66,7 +66,7 @@ public class Genes
 
         for(int i = 0; i < numChromosomes; i++)
         {
-            int[] list = new int[10];
+            int[] newChrom = new int[10];
             int p1 = UnityEngine.Random.Range(0, 10);
             int p2 = UnityEngine.Random.Range(0, 10);
             
@@ -77,20 +77,20 @@ public class Genes
             int j = 0;
             while (j < p1)
             {
-                list[j] = _first.chromosomes[i][j];
+                newChrom[j] = _first.chromosomes[i][j];
                 j++;
             }
             while (j <= p2)
             {
-                list[j] = _second.chromosomes[i][j];
+                newChrom[j] = _second.chromosomes[i][j];
                 j++;
             }
             while (j < 10)
             {
-                list[j] = _first.chromosomes[i][j];
+                newChrom[j] = _first.chromosomes[i][j];
                 j++;
             }
-            chromosomes.Add(list);
+            chromosomes.Add(newChrom);
         }
 
         //for (int i = 0; i < 10; i++)

@@ -716,8 +716,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numSpecies: 3
   numCreatures: 100
-  spawnRange: {x: 100, y: 100}
-  numChromosomes: 10
+  spawnRange: {x: 50, y: 50}
+  numChromosomes: 0
   creature: {fileID: 4794399991467442589, guid: ab510e17d364ed547bf696c4affa6182,
     type: 3}
   creatures: {fileID: 432144956}

@@ -18,7 +18,7 @@ public class SpawnCreatures : MonoBehaviour
         for (int i = 0; i < numSpecies; i++)
         {
             Genes idk = new Genes();
-            idk.RandomChromosomes();
+            idk.RandomGenes();
             species.Add(idk);
         }
         for (int i = 0; i < numCreatures; i++)
