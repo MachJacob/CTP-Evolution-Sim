@@ -7,6 +7,7 @@ public class Organism : MonoBehaviour
     //[SerializeField] private float[] genes;
     [SerializeField] private float age;
     [SerializeField] private float health;
+    private float maxHealth;
     [SerializeField] private float energy;
     [SerializeField] private float detectionRadius;
     [SerializeField] private float speed;
@@ -57,14 +58,14 @@ public class Organism : MonoBehaviour
             reproSystem = gameObject.AddComponent<ReproductionFemale>();
         }
         stomach = gameObject.AddComponent<Stomach>();
+        attackMem = -1;
+
         stomach.SetMetabolism(genes.metabolism);
         stomach.SetCarnivious(genes.carnivorous);
         energy = Random.Range(50f, 150f);
         float size = genes.size;
         transform.localScale = new Vector3(size, size, size);
-
         GetComponent<MeshRenderer>().material.color = new Color(genes.carnivorous, genes.speed / 1.5f, genes.metabolism / 10);
-        attackMem = -1;
         //net.FeedForward(input);
     }
 
@@ -98,14 +99,14 @@ public class Organism : MonoBehaviour
         }
 
         age += Time.deltaTime;
-        if (health < 100)   //regain health at cost of energy
+        if (health < maxHealth)   //regain health at cost of energy
         {
             health += Time.deltaTime / 2;
             lossEnergy += Time.deltaTime / 2;
         }
         if (energy <= 0)
         {
-            Destroy(gameObject);
+            Destroy(gameObject);    //TODO: add actual death
         }
 
         lossEnergy += Time.deltaTime * genes.size;
@@ -171,18 +172,20 @@ public class Organism : MonoBehaviour
             float carn = stomach.CarnVal();
             foreach (GameObject food in fruit)
             {
-                if (Vector3.Distance(transform.position, food.transform.position) * (1 - carn) < lowestDist)
+                float foodDist = Vector3.Distance(transform.position, food.transform.position) * (1 - carn);
+                if (foodDist < lowestDist)
                 {
-                    lowestDist = Vector3.Distance(transform.position, food.transform.position) * (1 - carn);
+                    lowestDist = foodDist;
                     closest = food;
                     currentState = "Find Fruit";
                 }
             }
             foreach(GameObject prey in creatures)
             {
-                if (Vector3.Distance(transform.position, prey.transform.position) * carn * 0.5f < lowestDist)
+                float foodDist = Vector3.Distance(transform.position, prey.transform.position) * carn * 0.5f;
+                if (foodDist < lowestDist)
                 {
-                    lowestDist = Vector3.Distance(transform.position, prey.transform.position) * carn * 0.5f;
+                    lowestDist = foodDist;
                     closest = prey;
                     hunting = true;
                     currentState = "Hunt";
@@ -190,9 +193,10 @@ public class Organism : MonoBehaviour
             }
             foreach (GameObject corpse in corpses)
             {
-                if (Vector3.Distance(transform.position, corpse.transform.position) * carn < lowestDist)
+                float foodDist = Vector3.Distance(transform.position, corpse.transform.position) * carn;
+                if (foodDist < lowestDist)
                 {
-                    lowestDist = Vector3.Distance(transform.position, corpse.transform.position) * carn;
+                    lowestDist = foodDist;
                     closest = corpse;
                     hunting = true;
                     currentState = "Find Carcass";
@@ -287,7 +291,7 @@ public class Organism : MonoBehaviour
             {
                 if (other.gameObject.GetComponent<Organism>().alive)
                 {
-                    other.gameObject.GetComponent<Organism>().DealDamage(genes.bite * genes.size, transform);
+                    other.gameObject.GetComponent<Organism>().DealDamage(genes.bite * (genes.GetGene(0, 9) + genes.GetGene(9, 2) / 10), transform);
                     other.gameObject.transform.Translate((other.gameObject.transform.position - transform.position) * 0.1f);
                     pause = 2;
                 }
@@ -326,17 +330,23 @@ public class Organism : MonoBehaviour
 
     public void RandomStart()
     {
-        genes = new Genes
-        {
-            speed = Random.Range(0.5f, 1.5f),
-            detRad = Random.Range(2.5f, 15.5f),
-            metabolism = Random.Range(0f, 10f),
-            gestPer = Random.Range(50f, 100f),
-            size = Random.Range(0.5f, 2.0f),
-            bite = Random.Range(0f, 25f),
-            carnivorous = Random.value
-        };
-        health = Random.Range(50f, 150f);
+        genes = new Genes();
+        genes.RandomGenes();
+        genes.RandomChromosomes();
+        maxHealth = Random.Range(50f, 150f);
+        health = maxHealth;
+        energy = Random.Range(50f, 150f);
+        direction = new Vector3(0.0f, 0.0f, 0.0f);
+        detectionRadius = genes.detRad;
+        speed = genes.speed;
+        timestamp = Random.Range(-0.5f, 0.5f);
+    }
+
+    public void SetStart(Genes _genes)
+    {
+        genes = _genes;
+        maxHealth = Random.Range(50f, 150f);
+        health = maxHealth;
         energy = Random.Range(50f, 150f);
         direction = new Vector3(0.0f, 0.0f, 0.0f);
         detectionRadius = genes.detRad;
@@ -354,7 +364,7 @@ public class Organism : MonoBehaviour
     {
         if (Random.Range(0, 100) > 95)
         {
-            genes.Random(); //+= Random.Range(-0.5f, 0.5f);
+            genes.RandomChromosomes(); //+= Random.Range(-0.5f, 0.5f);
         }
     }
 

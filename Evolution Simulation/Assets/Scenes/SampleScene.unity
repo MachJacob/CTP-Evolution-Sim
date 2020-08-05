@@ -312,7 +312,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 432144955}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 879.31635, y: 450.8673, z: -6.2526855}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -714,10 +714,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28e48480d58edd740a910b77bf9ca41e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  numSpecies: 3
+  numCreatures: 100
+  spawnRange: {x: 100, y: 100}
+  numChromosomes: 10
   creature: {fileID: 4794399991467442589, guid: ab510e17d364ed547bf696c4affa6182,
     type: 3}
-  spawn: 100
-  range: {x: 50, y: 50}
   creatures: {fileID: 432144956}
 --- !u!4 &1534149173
 Transform:

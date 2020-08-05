@@ -5,7 +5,7 @@ using UnityEngine;
 public class ReproductionFemale : BaseReproduction
 {
     private Organism self;
-    private float[] offspringGenes;
+    private Genes offspringGenes;
     [SerializeField] private float gestationPeriod;
     [SerializeField] private float time;
     private bool noOffspring;
@@ -14,7 +14,7 @@ public class ReproductionFemale : BaseReproduction
 
     void Start()
     {
-        offspringGenes = new float[20];
+        offspringGenes = new Genes();
         self = GetComponent<Organism>();
         gestationPeriod = self.GetGene(GENES.GEST_PER);
         pregnant = false;
@@ -35,17 +35,11 @@ public class ReproductionFemale : BaseReproduction
         }
     }
 
-    public void TakeGenes(float[] _genes, GameObject _father)
+    public void TakeGenes(Genes _genes, GameObject _father)
     {
-        if (pregnant)
-        {
-            return; //cannot get pregnant twice at once
-        }
+        if (pregnant) return; //cannot get pregnant twice at once
         Genes ownGenes = self.GetAllGenes();
-        for (int i = 0; i < _genes.Length; i++)
-        {
-            offspringGenes[i] = Mathf.Lerp(_genes[i], ownGenes.GetFloat()[i], Random.value);
-        }
+        offspringGenes.MergeChromosomes(_genes, ownGenes);
         pregnant = true;
         father = _father;
     }
@@ -53,9 +47,7 @@ public class ReproductionFemale : BaseReproduction
     private void GiveBirth()
     {
         GameObject offspring = Instantiate(gameObject, transform.parent);
-        Genes offGenes = new Genes();
-        offGenes.AssignGenes(offspringGenes);
-        offspring.GetComponent<Organism>().SetGenes(offGenes);
+        offspring.GetComponent<Organism>().SetGenes(offspringGenes);
         offspring.GetComponent<Organism>().SetParents(this.gameObject, father);
         offspring.GetComponent<Organism>().Mutate();
     }

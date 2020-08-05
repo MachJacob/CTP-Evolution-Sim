@@ -4,23 +4,31 @@ using UnityEngine;
 
 public class SpawnCreatures : MonoBehaviour
 {
+    public int numSpecies;
+    public int numCreatures;
+    public Vector2 spawnRange;
+    public int numChromosomes;
     public GameObject creature;
-    public int spawn;
-    public Vector2 range;
     public Transform creatures;
+    private List<Genes> species;
 
     void Start()
     {
-        for (int i = 0; i < spawn; i++)
+        species = new List<Genes>();
+        for (int i = 0; i < numSpecies; i++)
         {
-            Vector3 pos = new Vector3(Random.Range(-range.x, range.x), 0.5f, Random.Range(-range.y, range.y));
-            GameObject _spawn = Instantiate(creature, pos, Quaternion.identity, creatures);
-            _spawn.GetComponent<Organism>().RandomStart();
+            Genes idk = new Genes();
+            idk.RandomChromosomes();
+            species.Add(idk);
         }
-    }
-
-    void Update()
-    {
-        
+        for (int i = 0; i < numCreatures; i++)
+        {
+            int spec = Random.Range(0, species.Count);
+            Vector3 pos = new Vector3(Random.Range(-spawnRange.x, spawnRange.x), 1f, Random.Range(-spawnRange.y, spawnRange.y));
+            GameObject _spawn = Instantiate(creature, pos, Quaternion.identity, creatures);
+            //_spawn.GetComponent<Organism>().RandomStart();
+            _spawn.GetComponent<Organism>().SetStart(species[spec]);
+            
+        }
     }
 }
